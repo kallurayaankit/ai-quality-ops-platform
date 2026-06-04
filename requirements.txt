@@ -1,0 +1,7 @@
+pytest
+pytest-asyncio
+requests
+pyyaml
+fastapi
+uvicorn
+pytest-html 

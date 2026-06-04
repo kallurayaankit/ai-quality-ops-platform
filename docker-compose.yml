@@ -1,0 +1,40 @@
+services:
+  mock-ai:
+    build:
+      context: ./mock_ai_service
+      dockerfile: Dockerfile.mock
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/agent", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{\"query\":\"ping\"}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      mock-ai:
+        condition: service_healthy
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - TARGET_ENDPOINT=http://mock-ai:8000/agent
+    command: python orchestrator/runner.py
+
+  qa-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    depends_on:
+      - mock-ai
+    volumes:
+      - ./reports:/app/reports
+      - ./test_plans:/app/test_plans
+    environment:
+      - TARGET_ENDPOINT=http://mock-ai:8000/agent
+    command: uvicorn qa_service.main:app --host 0.0.0.0 --port 9000

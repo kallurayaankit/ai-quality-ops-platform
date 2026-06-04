@@ -1,0 +1,38 @@
+{
+  "run_id": "first-run",
+  "target": {
+    "endpoint": "http://mock-ai:8000/agent",
+    "type": "mock-rag"
+  },
+  "suites": [
+    {
+      "name": "data_integrity",
+      "path": "tests/pillar1/",
+      "blocking": true
+    },
+    {
+      "name": "eval_accuracy",
+      "path": "tests/pillar2/",
+      "blocking": true
+    },
+    {
+      "name": "security_redteam",
+      "path": "tests/pillar3/",
+      "blocking": true
+    },
+    {
+      "name": "performance_sla",
+      "path": "tests/pillar4/",
+      "blocking": false
+    },
+    {
+      "name": "observability_checks",
+      "path": "tests/pillar5/",
+      "blocking": false
+    }
+  ],
+  "global_thresholds": {
+    "p95_latency_ms": 3000,
+    "cost_per_1k_requests_usd": 2.5
+  }
+}
