@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: ai-quality-ops
+    env: docker
+    dockerfilePath: ./Dockerfile.qa
+    startCommand: uvicorn qa_service.main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    autoDeploy: true
