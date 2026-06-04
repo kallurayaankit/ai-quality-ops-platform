@@ -49,3 +49,52 @@ ai-quality-ops-platform/
 git clone https://github.com/kallurayaankit/ai-quality-ops-platform.git
 cd ai-quality-ops-platform
 docker compose up test-runner
+🧰 Tech Stack
+
+    Python, pytest, FastAPI, uvicorn
+
+    Docker & Docker Compose
+
+    GitHub Actions for CI/CD
+
+    pytest‑html for reports
+
+    Render (or any cloud) for deployment
+
+📄 License
+
+MIT – feel free to use, modify, and share.
+👤 Author
+
+Ankit Kalluraya
+AI Quality Architect | Staff QA Engineer
+GitHub
+text
+
+
+Save (`Ctrl+S`) and close.
+
+---
+
+## 🖼️ Step 2 – Update GitHub repository description
+
+1. Go to your repo: `https://github.com/kallurayaankit/ai-quality-ops-platform`  
+2. On the right side, click the **gear icon** next to “About”.  
+3. In the **Description** field, paste:
+
+End-to-end AI Quality Operations platform – five automated pillars (data, accuracy, security, performance, observability) with QA-as-a-Service API and CI/CD.
+text
+
+
+4. In the **Website** box, you can put the Render URL later (after deployment). For now, leave empty or put your GitHub Pages if you want.  
+5. Click **Save**.
+
+---
+
+## 📤 Step 3 – Push the README to GitHub
+
+```cmd
+git add README.md
+git commit -m "Add professional README"
+git push
+
