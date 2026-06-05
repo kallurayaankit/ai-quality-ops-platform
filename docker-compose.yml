@@ -13,7 +13,7 @@ services:
 
   medical-qa:
     build:
-      context: ./existing_projects/llm-medical-qa
+      context: ./existing_projects/medical-svc
       dockerfile: Dockerfile.med
     ports:
       - "8001:8000"
