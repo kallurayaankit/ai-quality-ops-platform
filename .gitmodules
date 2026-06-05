@@ -1,3 +1,9 @@
 [submodule "existing_projects/ai-agent-quality-sandbox"]
 	path = existing_projects/ai-agent-quality-sandbox
 	url = https://github.com/kallurayaankit/ai-agent-quality-sandbox.git
+[submodule "existing_projects/llm-medical-qa"]
+	path = existing_projects/llm-medical-qa
+	url = https://github.com/kallurayaankit/llm-medical-qa.git
+[submodule "existing_projects/research-agent"]
+	path = existing_projects/research-agent
+	url = https://github.com/kallurayaankit/research-agent.git
