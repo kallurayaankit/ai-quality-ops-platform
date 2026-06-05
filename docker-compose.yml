@@ -25,7 +25,7 @@ services:
 
   research-agent:
     build:
-      context: ./existing_projects/research-agent
+      context: ./existing_projects/research-agent-svc
       dockerfile: Dockerfile.res
     ports:
       - "8002:8000"
