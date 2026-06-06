@@ -35,6 +35,18 @@ services:
       timeout: 5s
       retries: 5
 
+  content-moderation:
+    build:
+      context: ./existing_projects/content-moderation-svc
+      dockerfile: Dockerfile.mod
+    ports:
+      - "8003:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/check", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{\"text\":\"test\"}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   test-runner:
     build:
       context: .
@@ -46,12 +58,15 @@ services:
         condition: service_healthy
       research-agent:
         condition: service_healthy
+      content-moderation:
+        condition: service_healthy
     volumes:
       - ./reports:/app/reports
     environment:
       - TARGET_ENDPOINT=http://mock-ai:8000/agent
       - MEDICAL_ENDPOINT=http://medical-qa:8000/agent
       - RESEARCH_ENDPOINT=http://research-agent:8000/agent
+      - MODERATION_ENDPOINT=http://content-moderation:8000/check
 
   qa-service:
     build:
