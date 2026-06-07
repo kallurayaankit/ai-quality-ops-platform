@@ -85,6 +85,18 @@ services:
       timeout: 5s
       retries: 5
 
+  zap:
+    build:
+      context: ./existing_projects/zap-svc
+      dockerfile: Dockerfile.zap
+    ports:
+      - "8007:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/scan", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{\"target_url\":\"http://mock-ai:8000\"}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   test-runner:
     build:
       context: .
@@ -104,6 +116,8 @@ services:
         condition: service_healthy
       model-ab-testing:
         condition: service_healthy
+      zap:
+        condition: service_healthy
     volumes:
       - ./reports:/app/reports
     environment:
@@ -114,6 +128,7 @@ services:
       - FRAUD_ENDPOINT=http://fraud-detection:8000/check
       - LOCUST_ENDPOINT=http://locust:8000/run
       - AB_ENDPOINT=http://model-ab-testing:8000/compare
+      - ZAP_ENDPOINT=http://zap:8000/scan
 
   qa-service:
     build:
