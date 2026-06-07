@@ -1,0 +1,19 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire project
+COPY . .
+
+# Create required directories before startup
+RUN mkdir -p /app/reports /app/qa_service/static
+
+# Start the QA service
+CMD ["uvicorn", "qa_service.main:app", "--host", "0.0.0.0", "--port", "8000"]
