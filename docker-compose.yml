@@ -109,6 +109,18 @@ services:
       timeout: 5s
       retries: 5
 
+  pact:
+    build:
+      context: ./existing_projects/pact-svc
+      dockerfile: Dockerfile.pact
+    ports:
+      - "8009:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/validate", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{\"endpoint\":\"/test\",\"response\":{\"ok\":true},\"expected_schema\":{\"required\":[\"ok\"]}}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   test-runner:
     build:
       context: .
@@ -132,6 +144,8 @@ services:
         condition: service_healthy
       data-quality:
         condition: service_healthy
+      pact:
+        condition: service_healthy
     volumes:
       - ./reports:/app/reports
     environment:
@@ -144,6 +158,7 @@ services:
       - AB_ENDPOINT=http://model-ab-testing:8000/compare
       - ZAP_ENDPOINT=http://zap:8000/scan
       - DQ_ENDPOINT=http://data-quality:8000/validate
+      - PACT_ENDPOINT=http://pact:8000/validate
 
   qa-service:
     build:
