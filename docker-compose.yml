@@ -121,6 +121,18 @@ services:
       timeout: 5s
       retries: 5
 
+  api-test-suite:
+    build:
+      context: ./existing_projects/api-test-suite-svc
+      dockerfile: Dockerfile.api
+    ports:
+      - "8010:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/smoke", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{\"target_url\":\"http://mock-ai:8000\"}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   test-runner:
     build:
       context: .
@@ -146,6 +158,8 @@ services:
         condition: service_healthy
       pact:
         condition: service_healthy
+      api-test-suite:
+        condition: service_healthy
     volumes:
       - ./reports:/app/reports
     environment:
@@ -159,6 +173,7 @@ services:
       - ZAP_ENDPOINT=http://zap:8000/scan
       - DQ_ENDPOINT=http://data-quality:8000/validate
       - PACT_ENDPOINT=http://pact:8000/validate
+      - API_SUITE_ENDPOINT=http://api-test-suite:8000/smoke
 
   qa-service:
     build:
