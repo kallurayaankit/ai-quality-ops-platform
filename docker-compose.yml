@@ -97,6 +97,18 @@ services:
       timeout: 5s
       retries: 5
 
+  data-quality:
+    build:
+      context: ./existing_projects/data-quality-svc
+      dockerfile: Dockerfile.dq
+    ports:
+      - "8008:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/validate", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{\"name\":\"test\",\"row_count\":1,\"missing_values_pct\":0,\"duplicate_rows_pct\":0}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   test-runner:
     build:
       context: .
@@ -118,6 +130,8 @@ services:
         condition: service_healthy
       zap:
         condition: service_healthy
+      data-quality:
+        condition: service_healthy
     volumes:
       - ./reports:/app/reports
     environment:
@@ -129,6 +143,7 @@ services:
       - LOCUST_ENDPOINT=http://locust:8000/run
       - AB_ENDPOINT=http://model-ab-testing:8000/compare
       - ZAP_ENDPOINT=http://zap:8000/scan
+      - DQ_ENDPOINT=http://data-quality:8000/validate
 
   qa-service:
     build:
