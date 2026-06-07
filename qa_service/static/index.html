@@ -1,1 +1,46 @@
-<html><body>UI coming soon</body></html> 
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>AI Quality Ops – UI</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 40px auto; }
+        input, button { padding: 10px; font-size: 16px; width: 100%; box-sizing: border-box; }
+        button { background: #2c3e50; color: white; border: none; cursor: pointer; }
+        #result { white-space: pre-wrap; background: #f5f5f5; padding: 20px; margin-top: 20px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>AI Quality Operations Platform</h1>
+    <p>Enter an AI agent endpoint URL and click "Run Tests".</p>
+    <input type="text" id="endpoint" value="http://mock-ai:8000/agent" placeholder="http://your-model:8000/agent">
+    <br><br>
+    <button onclick="runTests()">Run Tests</button>
+    <div id="result"></div>
+
+    <script>
+        async function runTests() {
+            const endpoint = document.getElementById('endpoint').value;
+            document.getElementById('result').innerText = 'Running tests...';
+            try {
+                const resp = await fetch('/run', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({target_endpoint: endpoint})
+                });
+                const data = await resp.json();
+                if (data.status === 'completed') {
+                    document.getElementById('result').innerHTML = 
+                        `<h3>✅ Tests completed (exit code ${data.exit_code})</h3>
+                         <a href="${data.report_url}" target="_blank">Open Full Report</a>
+                         <pre>${data.stdout}</pre>`;
+                } else {
+                    document.getElementById('result').innerText = 'Error: ' + JSON.stringify(data);
+                }
+            } catch (e) {
+                document.getElementById('result').innerText = 'Request failed: ' + e;
+            }
+        }
+    </script>
+</body>
+</html>
