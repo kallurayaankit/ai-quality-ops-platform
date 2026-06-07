@@ -73,6 +73,18 @@ services:
       timeout: 5s
       retries: 3
 
+  model-ab-testing:
+    build:
+      context: ./existing_projects/model-ab-testing-svc
+      dockerfile: Dockerfile.ab
+    ports:
+      - "8006:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/compare", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{\"query\":\"ping\"}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   test-runner:
     build:
       context: .
@@ -90,6 +102,8 @@ services:
         condition: service_healthy
       locust:
         condition: service_healthy
+      model-ab-testing:
+        condition: service_healthy
     volumes:
       - ./reports:/app/reports
     environment:
@@ -99,6 +113,7 @@ services:
       - MODERATION_ENDPOINT=http://content-moderation:8000/check
       - FRAUD_ENDPOINT=http://fraud-detection:8000/check
       - LOCUST_ENDPOINT=http://locust:8000/run
+      - AB_ENDPOINT=http://model-ab-testing:8000/compare
 
   qa-service:
     build:
