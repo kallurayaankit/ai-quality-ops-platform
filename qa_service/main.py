@@ -8,7 +8,7 @@ from pathlib import Path
 
 app = FastAPI(title="AI Quality Ops Platform - QA as a Service")
 
-# Health check — required by Railway
+# Health check
 @app.get("/")
 async def root():
     return {"status": "alive", "service": "AI Quality Ops Platform"}
@@ -45,6 +45,10 @@ async def run_tests(req: RunRequest):
         }
     else:
         raise HTTPException(status_code=500, detail="Report generation failed")
+
+# Ensure required directories exist
+os.makedirs("/app/reports", exist_ok=True)
+os.makedirs("/app/qa_service/static", exist_ok=True)
 
 # Serve static reports and UI
 app.mount("/reports", StaticFiles(directory="/app/reports"), name="reports")
