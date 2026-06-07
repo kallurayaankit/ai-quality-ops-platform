@@ -30,10 +30,10 @@ services:
     ports:
       - "8002:8000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/agent", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{\"query\":\"ping\"}"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 3
 
   content-moderation:
     build:
@@ -46,6 +46,32 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  fraud-detection:
+    build:
+      context: ./existing_projects/fraud-detection-svc
+      dockerfile: Dockerfile.frd
+    ports:
+      - "8004:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/check", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{\"avg_latency_ms\":200,\"avg_tokens\":3}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  locust:
+    build:
+      context: ./existing_projects/locust-svc
+      dockerfile: Dockerfile.loc
+    ports:
+      - "8005:8000"
+    environment:
+      - TARGET_ENDPOINT=http://mock-ai:8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   test-runner:
     build:
@@ -60,6 +86,10 @@ services:
         condition: service_healthy
       content-moderation:
         condition: service_healthy
+      fraud-detection:
+        condition: service_healthy
+      locust:
+        condition: service_healthy
     volumes:
       - ./reports:/app/reports
     environment:
@@ -67,6 +97,8 @@ services:
       - MEDICAL_ENDPOINT=http://medical-qa:8000/agent
       - RESEARCH_ENDPOINT=http://research-agent:8000/agent
       - MODERATION_ENDPOINT=http://content-moderation:8000/check
+      - FRAUD_ENDPOINT=http://fraud-detection:8000/check
+      - LOCUST_ENDPOINT=http://locust:8000/run
 
   qa-service:
     build:
