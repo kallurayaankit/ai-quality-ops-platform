@@ -3,6 +3,9 @@ from pydantic import BaseModel
 import time
 
 app = FastAPI(title="Research Agent Service")
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 class Query(BaseModel):
     query: str
