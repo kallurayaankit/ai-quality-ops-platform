@@ -1,100 +1,130 @@
-# 🧠 AI Quality Ops Platform
+# AI Quality Ops Platform
 
-**End‑to‑end AI Quality Operations ecosystem** – continuously validates, monitors, and guards every aspect of an AI product, from training data to production inference.
+**End-to-end AI Quality Operations** — continuously validates, monitors, and guards every aspect of an AI product, from training data to production inference.
 
-[![CI/CD Pipeline](https://github.com/kallurayaankit/ai-quality-ops-platform/actions/workflows/ai-quality.yml/badge.svg)](https://github.com/kallurayaankit/ai-quality-ops-platform/actions)
+Five automated quality pillars, orchestrated by a single JSON test plan, producing HTML reports with policy-gated pass/fail decisions.
 
----
+## Architecture
 
-## 💡 What it does
+```mermaid
+flowchart TB
+    subgraph Plan["Test Plan (JSON)"]
+        TP[test_plans/sample_plan.json]
+    end
 
-Not just a test suite – a platform that emulates what a **Staff AI QA Engineer** would build at a top‑tier AI company.  
-It runs five automated quality pillars:
+    subgraph Orchestrator
+        ORCH[orchestrator/runner.py<br/>reads plan, dispatches pillars]
+    end
 
-1. **Data Integrity** – checks training/input data for missing values, duplicates, and schema compliance.  
-2. **Accuracy & RAG Evaluation** – verifies that AI answers contain correct facts and, for RAG systems, use the right documents.  
-3. **Security & Bias Red‑Teaming** – probes for prompt injection, toxicity, and fairness using adversarial agents.  
-4. **Performance & Cost SLA** – measures p95 latency and estimates token cost, failing if thresholds are exceeded.  
-5. **Observability & Drift Detection** – logs metrics and alerts if model behavior drifts from a healthy baseline.
+    subgraph Pillars["Five Quality Pillars"]
+        P1[Pillar 1<br/>Data Integrity]
+        P2[Pillar 2<br/>Accuracy & RAG]
+        P3[Pillar 3<br/>Security & Bias]
+        P4[Pillar 4<br/>Performance & Cost]
+        P5[Pillar 5<br/>Observability & Drift]
+    end
 
-All orchestrated by a single **master test plan** (JSON), with **HTML reports** generated after every run.
+    subgraph Policies["Policies (YAML)"]
+        POL[policies/*.yaml<br/>thresholds & gates]
+    end
 
----
+    subgraph Target["AI Under Test"]
+        AI[mock-ai service<br/>or any HTTP endpoint]
+    end
 
-## 🏗️ Architecture
-ai-quality-ops-platform/
-├── orchestrator/ # Master runner – reads test plan, dispatches pillars
-├── tests/
-│ ├── pillar1/ # Data integrity
-│ ├── pillar2/ # Accuracy & RAG evaluation
-│ ├── pillar3/ # Security & bias
-│ ├── pillar4/ # Performance & cost
-│ └── pillar5/ # Observability & drift
-├── qa_service/ # QA‑as‑a‑Service REST API + web UI
-├── mock_ai_service/ # Example AI endpoint for testing
-├── test_plans/ # JSON test plans & baselines
-├── reports/ # Generated HTML reports
-├── Dockerfile # Main project container
-├── docker-compose.yml # Full stack (mock, test‑runner, QA service)
-└── .github/workflows/ # CI/CD pipeline (GitHub Actions)
+    subgraph Output["Reports"]
+        REP[reports/summary.html<br/>+ per-pillar HTML]
+    end
 
+    TP --> ORCH
+    ORCH --> P1 & P2 & P3 & P4 & P5
+    POL -.-> ORCH
+    P1 & P2 & P3 & P4 & P5 --> AI
+    P1 & P2 & P3 & P4 & P5 --> REP
 
----
+Runtime flow
+<img width="3640" height="2527" alt="deepseek_mermaid_20260918_ebb0ec" src="https://github.com/user-attachments/assets/f5bfd83f-f0a7-4123-820c-b5e22639a240" />
 
-## 🚀 Quick Start (local)
+What it does
 
-**Prerequisites:** Docker Desktop & Git.
+Runs five automated quality pillars:
+#	Pillar	What it checks
+1	Data Integrity	Missing values, duplicates, schema compliance in training/input data
+2	Accuracy & RAG	Correct facts, right documents retrieved, faithfulness to context
+3	Security & Bias	Prompt injection, toxicity, fairness, PII leakage
+4	Performance & Cost	p95 latency, token cost, SLA thresholds
+5	Observability & Drift	Metric logging, baseline comparison, drift alerts
 
-```bash
+Each pillar reads its thresholds from policies/. If a blocking pillar fails, the run aborts with a non-zero exit code — ready for CI.
+Quickstart — one command
+bash
+
 git clone https://github.com/kallurayaankit/ai-quality-ops-platform.git
 cd ai-quality-ops-platform
-docker compose up test-runner
-🧰 Tech Stack
+docker compose up demo
 
-    Python, pytest, FastAPI, uvicorn
+The demo:
 
-    Docker & Docker Compose
+    Spins up a bundled mock AI service (no external dependencies, no submodules)
 
-    GitHub Actions for CI/CD
+    Runs all five pillars against it
 
-    pytest‑html for reports
+    Writes reports/summary.html
 
-    Render (or any cloud) for deployment
+    Exits 0 if all blocking policies pass, 1 otherwise
 
-📄 License
+Open reports/summary.html in your browser.
+Policies
 
-MIT – feel free to use, modify, and share.
-👤 Author
+Quality gates live in policies/ as YAML. Each file defines thresholds for one pillar:
+yaml
 
-Ankit Kalluraya
-AI Quality Architect | Staff QA Engineer
-GitHub
+# policies/accuracy.yaml
+pillar: accuracy
+blocking: true
+metrics:
+  correctness:
+    threshold: 0.80
+    comparison: ">="
+  faithfulness:
+    threshold: 0.85
+    comparison: ">="
+  hallucination_rate:
+    threshold: 0.10
+    comparison: "<="
+
+The orchestrator loads every policies/*.yaml and passes the thresholds to the pillar tests via environment variables. Change a threshold, re-run, get a different verdict — no code changes.
+
+See policies/README.md for the full format.
+Repository layout
 text
 
+ai-quality-ops-platform/
+├── orchestrator/          # Master runner — reads plan, dispatches pillars
+├── tests/
+│   ├── pillar1/           # Data integrity
+│   ├── pillar2/           # Accuracy & RAG evaluation
+│   ├── pillar3/           # Security & bias red-teaming
+│   ├── pillar4/           # Performance & cost
+│   └── pillar5/           # Observability & drift
+├── policies/              # YAML quality gate definitions
+├── test_plans/            # JSON test plans & baselines
+├── demo/                  # Self-contained mock AI service
+├── reports/               # Generated HTML reports
+├── qa_service/            # QA-as-a-Service REST API + web UI
+├── mock_ai_service/       # Example AI endpoint for testing
+├── docs/                  # Architecture diagrams, sample reports
+├── Dockerfile
+├── docker-compose.yml
+└── .github/workflows/     # CI/CD pipeline
 
-Save (`Ctrl+S`) and close.
+Tech stack
 
----
+Python · pytest · FastAPI · uvicorn · Docker & Docker Compose · GitHub Actions · pytest-html
 
-## 🖼️ Step 2 – Update GitHub repository description
+License
 
-1. Go to your repo: `https://github.com/kallurayaankit/ai-quality-ops-platform`  
-2. On the right side, click the **gear icon** next to “About”.  
-3. In the **Description** field, paste:
+MIT — see LICENSE.
+Author
 
-End-to-end AI Quality Operations platform – five automated pillars (data, accuracy, security, performance, observability) with QA-as-a-Service API and CI/CD.
-text
-
-
-4. In the **Website** box, you can put the Render URL later (after deployment). For now, leave empty or put your GitHub Pages if you want.  
-5. Click **Save**.
-
----
-
-## 📤 Step 3 – Push the README to GitHub
-
-```cmd
-git add README.md
-git commit -m "Add professional README"
-git push
-
+Ankit Kalluraya — AI Quality Architect | Staff QA Engineer
