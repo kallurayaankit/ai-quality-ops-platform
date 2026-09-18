@@ -36,7 +36,7 @@ sequenceDiagram
     participant Pillar as Pillar Tests
     participant AI as AI Service
     participant Report as Report Generator
-    Dev->>Orch: docker compose up demo
+    Dev->>Orch: python demo/run.py
     Orch->>Orch: load plan and policies
     loop For each pillar
         Orch->>Pillar: pytest tests/pillarN
@@ -69,17 +69,32 @@ Each pillar reads its thresholds from `policies/`. If a blocking pillar fails, t
 ```bash
 git clone https://github.com/kallurayaankit/ai-quality-ops-platform.git
 cd ai-quality-ops-platform
-docker compose up demo
+python demo/run.py
 ```
 
 The demo:
 
-- Spins up a bundled mock AI service (no external dependencies, no submodules)
-- Runs all five pillars against it
+- Builds a bundled mock AI service (no external dependencies, no submodules)
+- Starts it in Docker
+- Runs the accuracy pillar against it
 - Writes `reports/summary.html`
-- Exits 0 if all blocking policies pass, 1 otherwise
+- Exits 0 if the blocking pillar passes, 1 otherwise
 
-Open `reports/summary.html` in your browser.
+The bundled mock answers a few fixed questions (capital of France, largest planet, etc.) so the accuracy test has a deterministic target.
+
+**Verified output:**
+
+```
+===== Running suite: accuracy =====
+..                                                              [100%]
+Master report saved: reports/summary.html
+
+Suite         Status   Detailed Report
+accuracy      PASS     Open Report
+Overall Verdict: PASS
+```
+
+Open `reports/summary.html` in your browser. A committed copy lives at [`docs/sample-report/summary.html`](docs/sample-report/summary.html).
 
 ## Policies
 
@@ -118,13 +133,14 @@ ai-quality-ops-platform/
 │   └── pillar5/           # Observability & drift
 ├── policies/              # YAML quality gates
 ├── test_plans/            # JSON test plans
-├── demo/                  # Self-contained mock AI
+├── demo/                  # Self-contained mock AI service
 ├── reports/               # Generated HTML
 ├── qa_service/            # QA REST API + web UI
 ├── mock_ai_service/       # Example AI endpoint
 ├── docs/                  # Diagrams, sample reports
 ├── Dockerfile
 ├── docker-compose.yml
+├── docker-compose.demo.yml
 └── .github/workflows/     # CI/CD
 ```
 

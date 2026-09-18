@@ -1,0 +1,14 @@
+{
+  "run_id": "demo-run",
+  "target": {
+    "endpoint": "http://mock-ai:8000/agent",
+    "type": "mock-rag"
+  },
+  "suites": [
+    { "name": "accuracy", "path": "tests/pillar2/test_accuracy.py", "blocking": true }
+  ],
+  "global_thresholds": {
+    "p95_latency_ms": 3000,
+    "cost_per_1k_requests_usd": 2.50
+  }
+}
